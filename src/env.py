@@ -20,11 +20,13 @@ class StockMarket:
         # do a price lookUp, return the cost (negative if they bought, positive if sold)
         return 0
 
-    def nextDay(self) -> None:
-        """
-        fluctuates all the stock prices by their equations for the next day for trading
-        """
-        pass
+    def updateMarket(self) -> None:
+        '''
+        has each stock run updateStock on itself so it can update its values and clear the last days variables
+        :return: None
+        '''
+        for stock in self.__stocks:
+            stock.upDateStock()
 
     def __makeStocks(self, maxGoing=100.00, volatility=4, marketSize=100, initAmount=10):
         """
