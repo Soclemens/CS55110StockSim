@@ -9,7 +9,7 @@ class Trader:
         -Spencer
         '''
         self.__holdings = []  # list of stokes, amount, & their purchase price
-        self.__stopLost = stopLoss  # persentage return. TODO, figure out of this should be flat, or percentile
+        self.__stopLoss = stopLoss  # persentage return. TODO, figure out of this should be flat, or percentile
 
     def act(self, listings: list) -> list:
         """
