@@ -1,8 +1,5 @@
-from agent import Trader
-
-
-from env import *
-from agent import *
+from src.env import *
+from src.agent import *
 
 def initialize():
     # set up
