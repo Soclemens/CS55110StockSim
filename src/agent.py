@@ -34,14 +34,6 @@ class RiskNeutral(Trader):
         return [("NAN", 0)]
 
 
-class RiskNeutral(Trader):
-    def __init__(self, money=10_100) -> None:
-        super().__init__(money=money, stopLoss=0.1)
-
-    def act(self, listings) -> list:
-        return [("NAN", 0)]
-
-
 class WildCard(Trader):
     def __init__(self, money=10_100) -> None:
         super().__init__(money=money, stopLoss=0.25)
