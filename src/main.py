@@ -13,12 +13,14 @@ def reportStats(agents):
 def gameLoop():
     stockMarket = StockMarket()
     agents = []
-    agents.extend([RiskNeutral() for _ in range(1)])
+    agents.extend([RiskNeutral() for _ in range(1)])  # makes x of this type of agent
     print("stockMarket")
     for _ in range(TRADING_DAYS+1):
         todaysListing = stockMarket.getStockListings()
         for agent in agents:
-            agent.adjustBalance(stockMarket.doTrade(agent.act(todaysListing)))
+            for stock in todaysListing:
+                
+                agent.adjustBalance(stockMarket.doTrade(agent.act(todaysListing)))
         stockMarket.updateMarket()
     
     reportStats(agents)

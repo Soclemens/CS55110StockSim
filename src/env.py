@@ -52,16 +52,21 @@ class Stock:
     def __init__(self, priceHistory, myStdev, key) -> None:
         self.__key = key
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
-        self.__goingPrice = lambda : self.__priceHistory[-1]  # the current going price of a stock
-        # self.__volatility = stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
-        self.__volatility = myStdev  # how volatile a stock is. Is given, instead of being calculated, because we would have to do a large seeding to have an accurate guess at the stdev
-        self.__upperBound = lambda x, b, s: -(.8) * log(x - 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
-        self.__lowerBound = lambda x, b, s: -(.8) * log(-x + 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+        self.__goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
+        self.__volatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
+        # self.__volatility = myStdev  # how volatile a stock is. Is given, instead of being calculated, because we would have to do a large seeding to have an accurate guess at the stdev
         self.__todaySells = 0  # Stock object tracks how much of itself was sold
         self.__todayBuys = 0  # Stock object tracks how much of itself was bought
-    
+
     def __repr__(self) -> str:
-        return "key:" + str(self.__key) + " price:" + self.__goingPrice
+        return "key:" + str(self.__key) + " price:" + str(self.__goingPrice())
+
+    def __upperBound(x, b, s): 
+        return -(.8) * log(x - 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+    
+    def __lowerBound(x, b, s):
+        return -(.8) * log(-x + 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+
 
     def upDateStock(self):
         '''
