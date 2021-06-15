@@ -9,16 +9,17 @@ class StockMarket:
         """
         Handles the trading and prices of stocks
         """
-        self.__stocks = self.__makeStocks()
+        self.__stocks = self.__makeStocks(marketSize=100)
 
     def getStockListings(self) -> list:  # (stock key, current price)
         return self.__stocks
 
-    def doTrade(self, action: list) -> int:
-        # TODO: move this method into the actors realm of influence
-        # I think this method should be in the actor classes because it will be up to them to do trades and not the market itself - Spencer
-        # do a price lookUp, return the cost (negative if they bought, positive if sold)
-        return 0
+    # NOTE: deprecated, might bring back if we do mass trading
+    # def doTrade(self, action: list) -> int:
+    #     # TODO: move this method into the actors realm of influence
+    #     # I think this method should be in the actor classes because it will be up to them to do trades and not the market itself - Spencer
+    #     # do a price lookUp, return the cost (negative if they bought, positive if sold)
+    #     return 0
 
     def updateMarket(self) -> None:
         '''
@@ -49,16 +50,24 @@ class StockMarket:
 
 
 class Stock:
-    def __init__(self, priceHistory, myStdev, key) -> None:
-        self.__key = key
+    def __init__(self, priceHistory, myStdev, name) -> None:
+        self.name = name if type(name) == str else str(name)  # Make sure it's a string
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
-        self.__goingPrice = priceHistory[-1]  # the current going price of a stock
-        # self.__volatility = stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
-        self.__volatility = myStdev  # how volatile a stock is. Is given, instead of being calculated, because we would have to do a large seeding to have an accurate guess at the stdev
-        self.__upperBound = lambda x, b, s: -(.8) * log(x - 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
-        self.__lowerBound = lambda x, b, s: -(.8) * log(-x + 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+        self.goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
+        self.volatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
+        # self.__volatility = myStdev  # how volatile a stock is. Is given, instead of being calculated, because we would have to do a large seeding to have an accurate guess at the stdev
         self.__todaySells = 0  # Stock object tracks how much of itself was sold
         self.__todayBuys = 0  # Stock object tracks how much of itself was bought
+
+    def __repr__(self) -> str:
+        return "key:" + self.name + " price:" + str(self.goingPrice())
+
+    def __upperBound(x, b, s): 
+        return -(.8) * log(x - 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+    
+    def __lowerBound(x, b, s):
+        return -(.8) * log(-x + 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
+
 
     def upDateStock(self):
         '''
@@ -78,6 +87,7 @@ class Stock:
         :return: None
         """
         self.__todayBuys += 1
+        # print("bought:", self.name)
 
     def stockSold(self):
         """
@@ -85,6 +95,7 @@ class Stock:
         :return: None
         """
         self.__todaySells += 1
+        # print("sold:", self.name)
 
 
 if __name__ == '__main__':  # this is here to test the code that I was writing and make sure Stock Market was working the way it should
