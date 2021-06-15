@@ -16,6 +16,9 @@ class Trader:
         # self.__stockLimit = 20
 
     def netWorth(self):
+        """
+        return the current net worth (money + sum of each stock's current price)
+        """
         return self.__money + sum([stock.goingPrice() * self.__holdings[stock]['amount'] for stock in self.__holdings.keys()])
         
     def print(self, showPortfolio = False) -> str:
