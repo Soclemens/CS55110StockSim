@@ -30,7 +30,7 @@ def gameLoop():
                 # print(action)
         stockMarket.updateMarket()  # update stock prices for tomorrow
 
-        print("Finished day " + str(_) + " out of " + str(TRADING_DAYS + 1) + "... " + str(_/TRADING_DAYS) + "%")
+        print("Finished day " + str(_) + " out of " + str(TRADING_DAYS + 1) + "... " + str((_/TRADING_DAYS) * 100) + "%")
     
     reportStats(agents)
 
