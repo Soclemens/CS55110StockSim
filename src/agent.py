@@ -48,9 +48,9 @@ class Trader:
         This is the "act" function, returns true if they want to buy/keep a stock,
             or false if they want to sell/pass on that same stock
         """
-        if self.__holdings[stock]['amount']>0:# Check if I already own this stock
-            # check if I'm withing the stock tolerance
-            if abs(1-stock.goingPrice()/self.__holdings[stock]['purchasePrice'])>self.__stopLoss:
+        if self.__holdings[stock]['amount']>0:  # Check if I already own this stock
+            # check if I'm within the stock tolerance
+            if abs(1-stock.goingPrice()/self.__holdings[stock]['purchasePrice']) > self.__stopLoss:
                 # Sell
                 stock.stockSold()
                 self.__holdings[stock]['amount'] -= 1  # remove from my own ledger
@@ -72,7 +72,9 @@ class Trader:
             else:
                 return False, "Pass" 
 
-    
+    def __str__(self):
+        return "I am " + self.name
+
     # NOTE: currently deprecate, might bring back if we revert to mass ordering
     # def act(self, listings:list) -> list:
     #     """
