@@ -26,8 +26,8 @@ def gameLoop():
 
         for agent in agents:  # for each agent
             for stock in todaysListing:  # for each stock
-                action = agent.act(stock)  # NOTE: Actor's decisions are pass by reference to market
-                # print(action)
+                action = agent.act(stock)
+                stockMarket.doTrade(action) # Mass trading is back, baby!!!
         stockMarket.updateMarket()  # update stock prices for tomorrow
 
         print("Finished day " + str(_) + " out of " + str(TRADING_DAYS + 1) + "... " + str((_/TRADING_DAYS) * 100) + "%")
