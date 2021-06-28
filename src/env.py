@@ -1,8 +1,10 @@
-from random import randint, uniform
+from random import random, randint, uniform, seed
 from math import log
 from statistics import stdev
 import scipy.stats as stats
 
+# Number of the groups that are going to be used
+numGroups = 10
 
 class StockMarket:
     def __init__(self) -> None:
@@ -26,8 +28,11 @@ class StockMarket:
         has each stock run updateStock on itself so it can update its values and clear the last days variables
         :return: None
         '''
+        # TODO: Dial this in
+        # Group updates (+-2.5%)
+        groupOffset = [(random()-0.5)/20 for _ in range(numGroups)]
         for stock in self.__stocks:
-            stock.upDateStock()
+            stock.upDateStock(groupOffset)
 
     def __makeStocks(self, maxGoing=100.00, volatility=4, marketSize=100, initAmount=10):
         """
@@ -44,6 +49,7 @@ class StockMarket:
             dist = stats.truncnorm((0.01 - mu) / sigma, (maxGoing - mu) / sigma, loc=mu, scale=sigma)
             values = dist.rvs(initAmount)
 
+            # TODO: I have no idea what I'm doing!!!
             stockMarket.append(Stock(values, sigma, stockNumber))  # grow the listings in the stock market
 
         return stockMarket
@@ -55,6 +61,10 @@ class Stock:
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
         self.goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
         
+        #########
+        seed(int(self.name))
+        self.groupMembership = [round(random(), 2)]
+        #########
         #########
         self.__findVolatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
         # NOTE: I've made a cached version that can be quired without running the function each time the agent make a judgment call
@@ -74,19 +84,20 @@ class Stock:
         return -(.8) * log(-x + 1 * (log(b + 1, 3) - log(s + 1, 3)), 3) + .0026  # {0≤b,0≤s}
 
 
-    def upDateStock(self):
+    def upDateStock(self, groupOffsets):
         '''
         Called at the end of each day to update the price history, going price, and the volatility.
         :return: returns a 0 for success, a -1 for a failure
         '''
         # TODO: Calculate new price based off of the equation and inputs
+            # Needs to use the money witch magic here
+        nextPrice = self.goingPrice()  # update each for the individual stock
         # TODO: Clear todaySells and todayBuys so they are fresh for tomorrow
         # TODO: Update going price so when actors buy or sell tomorrow they will be able to accurately calculate returns
-        # TODO: Update stock volatility
-
+        nextPrice += sum([self.groupMembership[i]*groupOffsets[i] for i in range(numGroups)])    # update for the group amount
         # TODO: Cache the Volatility for the agents decision making process.
             # (NEEDS validate)
-        self.volatility = self.__findVolatility()
+        self.volatility = self.__findVolatility()         # TODO: Update stock volatility
         
 
     def stockBought(self):
