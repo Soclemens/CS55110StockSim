@@ -15,7 +15,7 @@ def reportStats(agents):
 
 
 def gameLoop():
-    stockMarket = StockMarket()  # initialize the stock market
+    stockMarket = StockMarket(marketSize=10)  # initialize the stock market
     agents = []  # make a abstract container of agents
     x = 10
     agents.extend([RiskNeutral(stockMarket.getStockListings()) for _ in range(x)])  # makes x of neutral type of agent

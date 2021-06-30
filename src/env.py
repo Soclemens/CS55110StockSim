@@ -7,11 +7,11 @@ import scipy.stats as stats
 numGroups = 10
 
 class StockMarket:
-    def __init__(self) -> None:
+    def __init__(self, marketSize = 100) -> None:
         """
         Handles the trading and prices of stocks
         """
-        self.__stocks = self.__makeStocks(marketSize=100)
+        self.__stocks = self.__makeStocks(marketSize=marketSize)
 
     def getStockListings(self) -> list:  # (stock key, current price)
         return self.__stocks
