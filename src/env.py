@@ -7,23 +7,25 @@ import scipy.stats as stats
 numGroups = 10
 
 class StockMarket:
-    def __init__(self, marketSize = 100) -> None:
+    def __init__(self, marketSize = 100):
         """
         Handles the trading and prices of stocks
         """
         self.__stocks = self.__makeStocks(marketSize=marketSize)
 
-    def getStockListings(self) -> list:  # (stock key, current price)
+    def getStockListings(self):  # (stock key, current price)
         return self.__stocks
 
-    # NOTE: deprecated, might bring back if we do mass trading
-    # def doTrade(self, action: list) -> int:
-    #     # TODO: move this method into the actors realm of influence
-    #     # I think this method should be in the actor classes because it will be up to them to do trades and not the market itself - Spencer
-    #     # do a price lookUp, return the cost (negative if they bought, positive if sold)
-    #     return 0
+    def doTrade(self, order: list):
+        for stock in order:
+            amount = order[stock]
+            if amount<0:
+                stock.stockSold(amount)
+            elif amount>0:
+                stock.stockBought(amount)
 
-    def updateMarket(self) -> None:
+
+    def updateMarket(self):
         '''
         has each stock run updateStock on itself so it can update its values and clear the last days variables
         :return: None
@@ -56,14 +58,14 @@ class StockMarket:
 
 
 class Stock:
-    def __init__(self, priceHistory, myStdev, name) -> None:
+    def __init__(self, priceHistory, myStdev, name):
         self.name = name if type(name) == str else str(name)  # Make sure it's a string
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
         self.goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
         
         #########
         seed(int(self.name))
-        self.groupMembership = [round(random(), 2)]
+        self.groupMembership = [round(random(), 2) for _ in range(numGroups)]
         #########
         #########
         self.__findVolatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
@@ -100,19 +102,19 @@ class Stock:
         self.volatility = self.__findVolatility()         # TODO: Update stock volatility
         
 
-    def stockBought(self):
+    def stockBought(self, amount = 1):
         """
         Updates the class variable stocks bought to one plus itself to indicate an actor "bought" the stock.
         :return: None
         """
-        self.__todayBuys += 1
+        self.__todayBuys += amount
 
-    def stockSold(self):
+    def stockSold(self, amount = 1):
         """
         Updates the class variable stocks sold to one plus itself to indicate an actor "sold" the stock.
         :return: None
         """
-        self.__todaySells += 1
+        self.__todaySells += amount
 
 
 if __name__ == '__main__':  # this is here to test the code that I was writing and make sure Stock Market was working the way it should
