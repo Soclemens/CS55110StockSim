@@ -1,23 +1,20 @@
 import matplotlib.pyplot as plt
-import numpy as np
 from env import *
 from agent import *
+import typer
+from typing import Optional
 
-TRADING_DAYS = 252
-
-def initialize():
-    # set up
-    gameLoop()
+app = typer.Typer()
 
 
-def gameLoop():
-    stockMarket = StockMarket(marketSize=30)  # initialize the stock market
+@app.command()
+def gameLoop(actorCount: Optional[int] = 1, traidingDays: Optional[int] = 10, marketSize: Optional[int] = 30):
+    stockMarket = StockMarket(marketSize=marketSize)  # initialize the stock market
     agents = []  # make a abstract container of agents
-    x = 10
-    agents.extend([RiskNeutral(ID=i+1) for i in range(x)])  # makes x of neutral type of agent
-    agents.extend([RiskTolerant(ID=i+1) for i in range(x)])  # makes x of tolerant type of agent
-    agents.extend([RiskAvers(ID=i+1) for i in range(x)])  # makes x of avers type of agent
-    for i in range(TRADING_DAYS+1):  # Trade for x days
+    agents.extend([RiskNeutral(ID=i+1) for i in range(actorCount)])  # makes x of neutral type of agent
+    agents.extend([RiskTolerant(ID=i+1) for i in range(actorCount)])  # makes x of tolerant type of agent
+    agents.extend([RiskAvers(ID=i+1) for i in range(actorCount)])  # makes x of avers type of agent
+    for i in range(traidingDays+1):  # Trade for x days
         todaysListing = stockMarket.getStockListings()  # get todays prices
         for agent in agents:  # for each agent
             actions = agent.act(todaysListing)
@@ -27,7 +24,7 @@ def gameLoop():
                     print('\t', act, order)
         stockMarket.updateMarket()  # update stock prices for tomorrow
 
-        print("Finished day " + str(i) + " out of " + str(TRADING_DAYS + 1) + "... " + format(i/TRADING_DAYS,'.2%'))
+        print("Finished day " + str(i) + " out of " + str(traidingDays + 1) + "... " + format(i/traidingDays,'.2%'))
         print("--------------------------------------------------------------------------------------------------------")
     
     reportStats(agents)
@@ -57,4 +54,4 @@ def graph(stockMarket):
 
 
 if __name__ == '__main__':
-    initialize()
+    app()
