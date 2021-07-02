@@ -75,8 +75,9 @@ class Stock:
         xRange.append(lowerBound)
         xRange.append(upperBound)
         self.__priceHistory = np.append(self.__priceHistory, uniform(xRange[0], xRange[1]) + self.goingPrice())
-        self.__todayBuys = 0  # simulate more actors
-        self.__todaySells = 0  # simulate more actors
+        # Simulate more actors in the market
+        self.__todayBuys = int(uniform(10, 50))
+        self.__todaySells = int(uniform(10, 50))
 
         return 0
 

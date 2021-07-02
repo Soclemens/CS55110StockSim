@@ -48,21 +48,23 @@ class Trader:
     #         print("Agent:"+self.name,"Passed this turn")
 
     def act(self, stock):
+        flag = True  # if stay true we can buy
         # figure out if I own the stock
         for orderItem in self.portfolio:
             if orderItem.stock == stock:
-                if stock.goingPrice() + (orderItem.boughtAt * (self.stopLoss / 100)) > orderItem.boughtAt:  # sell branch
+                flag = False  # Prevents me from buying IE we already have this stock no need to buy again
+                if stock.goingPrice() - (orderItem.boughtAt * (self.stopLoss / 100)) > orderItem.boughtAt:  # sell branch
                     self.returns += stock.goingPrice() - orderItem.boughtAt
                     self.portfolio.remove(orderItem)
                     return "Sell Stock ", stock.name
 
-        # cant reach me if I own the stock so I dont need to double check the ownership
-        if stock.volatility() - 1 < self.idealRisk > stock.volatility() + .75:  # buy branch
+
+        if stock.volatility() - 1 < self.idealRisk > stock.volatility() + .75 and flag:  # buy branch
             self.portfolio.append(Order(stock))
             stock.stockBought()
             return "Buy Stock ", stock.name
-        else:
-            return None
+
+        return None
 
 class Order():
     def __init__(self, stock):
@@ -75,17 +77,17 @@ Currently, these classes are only modified the abstract classes
 """
 class RiskAvers(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=1, idealRisk=1, name="(risk adverse:" + str(id) + ")")
+        super().__init__(stopLoss=5, idealRisk=1, name="(risk adverse:" + str(id) + ")")
 
 
 class RiskNeutral(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=1, idealRisk=2, name="(risk Neutral:" + str(id) + ")")
+        super().__init__(stopLoss=10, idealRisk=2, name="(risk Neutral:" + str(id) + ")")
 
 
 class RiskTolerant(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=4, idealRisk=3, name="(risk Tolerant:" + str(id) + ")")
+        super().__init__(stopLoss=20, idealRisk=3, name="(risk Tolerant:" + str(id) + ")")
 
 
 # TODO, actually write these.

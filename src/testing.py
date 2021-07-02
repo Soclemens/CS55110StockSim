@@ -1,4 +1,2 @@
-### Testing scrpts for each of the objects
-
-### unit tests
-# agents
+from random import uniform
+print()
