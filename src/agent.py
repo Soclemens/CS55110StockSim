@@ -1,126 +1,115 @@
 
+class Order():
+    def __init__(self, stock, volume):
+        self.stock = stock
+        self.volume = volume
+        self.boughtAt = stock.goingPrice()
+    
+    def worth(self):
+        return self.stock.goingPrice() *self.volume
+
+    def __repr__(self):
+        msg = 'stock:'+self.stock.name
+        msg += ', num:' + str(self.volume)
+        msg += ', boughtAt:' + format(self.boughtAt, '.2f')
+        msg += ', now:' + format(self.stock.goingPrice(),'.2f')
+        return msg
+
+
 class Trader:
     """Abstract class to allow for interfacing with env
        Contains act() and a default constructor"""
 
-    #NOTE: Not used. Only 20 stocks are permitted, 1 of each stock
-    #NOTE: Currently, there is not debt limit
-    def __init__(self, alltheStocks, money=10_000, stopLost=0.2, name="ABSTRACT") -> None:
+    def __init__(self, name="ABSTRACT", stopLoss=2, idealRisk = 2, budget=500) -> None:
         self.name = name  # Dump little ID for pretty printing the type of agent for the report
-        self.__money = money
-        # self.__deptLimit = money  # yoy can only go -10,000 in dept
-        # list of stokes, amount, & their purchase price
-        self.__holdings = { stock:{'amount':0,'purchasePrice':0} for stock in alltheStocks}  
-        self.__log = []  # logs of actions taken
-        self.__stopLoss = stopLost  # persentage of return I want
-        # self.__stockLimit = 20
+        self.portfolio = []
+        self.stopLoss = stopLoss  # persentage of return I want
+        self.idealRisk = idealRisk
+        self.money = budget
+        self.initialCapital = budget
+        self.stats = {'timesBought':0, 'timesSold':0}
 
-    def netWorth(self):
+
+    def returns(self):
         """
-        return the current net worth (money + sum of each stock's current price)
+        return how much money the agent as earned
         """
-        return self.__money + sum([stock.goingPrice() * self.__holdings[stock]['amount'] for stock in self.__holdings.keys()])
+        return sum([order.worth() for order in self.portfolio]) + self.money -self.initialCapital
         
-    def print(self, showPortfolio = False) -> str:
+            
+    def printPerformance(self):
         """
-        for printing the agent with its Type, Networth, then its portfolio of stocks with each price
+        Prints Name, Type, Returns(netGrowth)
         """
-        msg = f"Agent:{self.name}\t"+ "NetWorth:" + format(self.netWorth(),".2f") +"\n\t"
-        if showPortfolio:
-            msg += "\n\t".join([
-                "stock:"+stock.name+", "+format(stock.goingPrice(),".2f") 
-                for stock in self.__holdings.keys() if self.__holdings[stock]['amount']>0
-            ])
-        print(msg)
-
-    def act(self, stock):
-        """
-        Currently, just and interface to log the agents action based on it's stock analysis
-        """
-        result = self.__analyzeStock(stock)
-        self.__log.append(result[1])
-        return result
-
-    # NOTE: This automatically assumes it's buying/selling its stock, make sure the market reflects that
-    # NOTE: I have no idea what needs to be returned, the string or bool, or both.
-    def __analyzeStock(self, stock) -> tuple:
-        """
-        This is the "act" function, returns true if they want to buy/keep a stock,
-            or false if they want to sell/pass on that same stock
-        """
-        if self.__holdings[stock]['amount']>0:# Check if I already own this stock
-            # check if I'm withing the stock tolerance
-            if abs(1-stock.goingPrice()/self.__holdings[stock]['purchasePrice'])>self.__stopLoss:
-                # Sell
-                stock.stockSold()
-                self.__holdings[stock]['amount'] -= 1  # remove from my own ledger
-                # print(self.__holdings[stock]['amount'])  # add to my own ledger
-                self.__money += stock.goingPrice()  # pocket the windfall
-                self.__holdings[stock]['purchasePrice'] = 0
-                return False, "Sell"
-            else:
-                return True, "Keep"
-        else:  # nope, that's new
-            if stock.volatility()<=self.__stopLoss: # check volatility
-                # Buy
-                stock.stockBought()
-                self.__holdings[stock]['amount'] += 1  # add to my own ledger
-                # print(self.__holdings[stock]['amount'])  # add to my own ledger
-                self.__money -= stock.goingPrice()  # deduct the price
-                self.__holdings[stock]['purchasePrice'] = stock.goingPrice()
-                return True, "Buy"
-            else:
-                return False, "Pass" 
-
+        print(f"Agent:{self.name} made:\t$"+format(self.returns(),".2f"))
     
-    # NOTE: currently deprecate, might bring back if we revert to mass ordering
-    # def act(self, listings:list) -> list:
-    #     """
-    #     Returns an "action" or a list of stock/number pairs corresponding to the by/sell amount
-    #     """
-    #     stockOrder = {}
-    #     for listing in listings:
-    #         stockOrder[listing.key] = self.analyzeStock(listing)
 
-    #     # Do I mamage the amount of stacks
-    #     # How do I Balance the amount of
-    #     # WHen do I remove stocks
-    #     # when is it okay to remove.
-    
-    #    return [("NAN", 0)]
+    def sell(self):
+        returnOrders = []
+        for order in self.portfolio:
+            # is the price outside of my stoploss range?
+            if abs(order.stock.goingPrice()/order.boughtAt-1) >= self.stopLoss/100:
+                self.money += order.worth()  # cash out the holding
+                for _ in range(order.volume): order.stock.stockSold()  # log transaction
+                returnOrders.append(('Sold', order)) # log action
+                self.portfolio.remove(order)  # remove from my portfolio
+        return returnOrders
+
+
+    def buy(self, todaysListing, soldOrders):
+        actions = []
+        shopingCard = []
+        for stock in todaysListing:
+            # if I just sold this stock, don't buy it back!
+            if stock in [order.stock for _,order in soldOrders]:continue
+            # If I already own this stock, don't buy more! (for now)
+            if stock in [order.stock for order in self.portfolio]: continue
+
+            # find the optimal amount of this stock to purchase
+            ideal_amount = self.idealRisk / stock.volatility()
+            closest_amount = sorted([int(ideal_amount),int(ideal_amount)+1],
+                key=lambda amount:abs(self.idealRisk - amount*stock.volatility())
+            )[0]
+            
+            #TODO: Get this checked and see if this is what was meant
+            # if stock.volatility() - 1 < self.idealRisk < stock.volatility() + .75:  # buy branch
+            
+            # is this adjusted volatility outside of my confort zone? 
+            if self.idealRisk+1 > closest_amount*stock.volatility() > self.idealRisk-0.75:  # buy branch
+                shopingCard.append(Order(stock, closest_amount))  # add this order to the card
+            
+        # sort card by items closest to my ideal risk level
+        for order in sorted(shopingCard, key=lambda order:abs(self.idealRisk - order.stock.volatility()*order.volume)):
+            if self.money >= order.worth():
+                for _ in range(order.volume): order.stock.stockBought()  # log transaction
+                self.portfolio.append(order)  # save this stock in my own records
+                actions.append(("Bought ", order)) # record action
+                self.money -= order.worth()  # balance the books
+
+        return actions
+
+
+    def act(self, todaysListing):
+
+        soldOrders = self.sell()  # doesn't required todays listing 
+        buyOrders = self.buy(todaysListing, soldOrders)
+
+        return soldOrders + buyOrders
 
 
 """
 Currently, these classes are only modified the abstract classes
 """
 class RiskAvers(Trader):
-    def __init__(self, allTheStocks) -> None:
-        super().__init__(allTheStocks, stopLost=0.05, name="riskAvers   ")
+    def __init__(self, ID=1):
+        super().__init__(stopLoss=5, idealRisk=1, name="Risk Adverse " + str(ID))
 
 
 class RiskNeutral(Trader):
-    def __init__(self, allTheStocks) -> None:
-        super().__init__(allTheStocks, stopLost=0.02, name="riskNeutral ")
+    def __init__(self, ID=1):
+        super().__init__(stopLoss=10, idealRisk=2, name="Risk Neutral " + str(ID))
 
 
 class RiskTolerant(Trader):
-    def __init__(self, allTheStocks) -> None:
-        super().__init__(allTheStocks, stopLost=0.01, name="riskTolerant")
-
-
-# TODO, actually write these.
-
-class WildCard(Trader):
-    def __init__(self, allTheStocks) -> None:
-        super().__init__(allTheStocks, stopLost=0.25)
-
-    def act(self, listings) -> list:
-        return [("NAN",0)]
-
-
-class Oscillator(Trader):
-    def __init__(self, allTheStocks) -> None:
-        super().__init__(allTheStocks, stopLost=0.1)
-
-    def act(self, listings) -> list:
-        return [("NAN",0)]
+    def __init__(self, ID=1):
+        super().__init__(stopLoss=20, idealRisk=3, name="Risk Tolerant " + str(ID))
