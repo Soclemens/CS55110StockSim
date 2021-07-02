@@ -1,3 +1,4 @@
+from random import uniform
 
 class Trader:
     """Abstract class to allow for interfacing with env
@@ -77,17 +78,17 @@ Currently, these classes are only modified the abstract classes
 """
 class RiskAvers(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=5, idealRisk=1, name="(risk adverse:" + str(id) + ")")
+        super().__init__(stopLoss=5 + uniform(0, 3), idealRisk=1  + uniform(0, 1), name="(risk adverse:" + str(id) + ")")
 
 
 class RiskNeutral(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=10, idealRisk=2, name="(risk Neutral:" + str(id) + ")")
+        super().__init__(stopLoss=10 + uniform(0, 4), idealRisk=2 + uniform(0, 1), name="(risk Neutral:" + str(id) + ")")
 
 
 class RiskTolerant(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stopLoss=20, idealRisk=3, name="(risk Tolerant:" + str(id) + ")")
+        super().__init__(stopLoss=20 + uniform(0, 5), idealRisk=3 + uniform(0, 1), name="(risk Tolerant:" + str(id) + ")")
 
 
 # TODO, actually write these.
