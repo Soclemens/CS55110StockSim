@@ -75,7 +75,7 @@ class Trader:
             # if stock.volatility() - 1 < self.idealRisk < stock.volatility() + .75:  # buy branch
             
             # is this adjusted volatility outside of my confort zone? 
-            if self.idealRisk+1 > closest_amount*stock.volatility() > self.idealRisk-0.75:  # buy branch
+            if self.idealRisk+0.75 > closest_amount*stock.volatility() > self.idealRisk-1:  # buy branch
                 shopingCard.append(Order(stock, closest_amount))  # add this order to the card
             
         # sort card by items closest to my ideal risk level
