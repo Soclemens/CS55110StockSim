@@ -23,7 +23,7 @@ class StockMarket:
         has each stock run updateStock on itself so it can update its values and clear the last days variables
         :return: None
         '''
-        executor = ThreadPoolExecutor(max_workers=4)
+        executor = ThreadPoolExecutor(max_workers=10)
         for stock in self.__stocks:
             executor.submit(stock.upDateStock())
 

@@ -7,10 +7,12 @@ def initialize():
     # set up
     gameLoop()
 
-def reportStats(agents):
+def reportStats(agents, x):
     print("///////// STATS REPORT /////////")
+    i = 0
     for agent in agents:
-        print(agent.returns)
+        print("group ", str(i // x), ": ", agent.returns)
+        i += 1
 
 
 def gameLoop():
@@ -36,7 +38,7 @@ def gameLoop():
         print("Finished day " + str(_) + " out of " + str(TRADING_DAYS + 1) + "... " + str((_/TRADING_DAYS) * 100) + "%")
         print("--------------------------------------------------------------------------------------------------------")
     
-    reportStats(agents)
+    reportStats(agents, x)
 
 
 if __name__ == '__main__':
