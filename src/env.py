@@ -1,9 +1,10 @@
+from concurrent.futures.thread import ThreadPoolExecutor
 from random import uniform
 from statistics import stdev
 import scipy.stats as stats
 from sympy import log, solve, symbols
 import numpy as np
-
+import threading
 
 class StockMarket:
     def __init__(self, marketSize=10) -> None:
@@ -22,8 +23,10 @@ class StockMarket:
         has each stock run updateStock on itself so it can update its values and clear the last days variables
         :return: None
         '''
+        executor = ThreadPoolExecutor(max_workers=4)
         for stock in self.__stocks:
-            stock.upDateStock()
+            executor.submit(stock.upDateStock())
+
 
     def __makeStocks(self, maxGoing=100.00, volatility=4, marketSize=100, initAmount=10):
         """
@@ -51,8 +54,8 @@ class Stock:
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
         self.goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
         self.volatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
-        self.__todaySells = 0  # Stock object tracks how much of itself was sold
-        self.__todayBuys = 0  # Stock object tracks how much of itself was bought
+        self.__todayBuys = 6  # simulate more actors
+        self.__todaySells = 8 # simulate more actors
 
     def __repr__(self) -> str:
         return "key:" + self.name + " price:" + str(self.goingPrice())
@@ -72,8 +75,8 @@ class Stock:
         xRange.append(lowerBound)
         xRange.append(upperBound)
         self.__priceHistory = np.append(self.__priceHistory, uniform(xRange[0], xRange[1]) + self.goingPrice())
-        self.__todayBuys = 0
-        self.__todaySells = 0
+        self.__todayBuys = 0  # simulate more actors
+        self.__todaySells = 0  # simulate more actors
 
         return 0
 

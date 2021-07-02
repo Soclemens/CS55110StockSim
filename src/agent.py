@@ -5,9 +5,9 @@ class Trader:
 
     #NOTE: Not used. Only 20 stocks are permitted, 1 of each stock
     #NOTE: Currently, there is not debt limit
-    def __init__(self, stocks, stopLoss=2, idealRisk = 2, money=10_000, name="ABSTRACT") -> None:
+    def __init__(self, stopLoss=2, idealRisk = 2, name="ABSTRACT") -> None:
         self.name = name  # Dump little ID for pretty printing the type of agent for the report
-        # self.money = money  # limit for what the
+        self.returns = 0
         self.portfolio = []
         self.stopLoss = stopLoss  # persentage of return I want
         self.idealRisk = idealRisk
@@ -48,18 +48,26 @@ class Trader:
     #         print("Agent:"+self.name,"Passed this turn")
 
     def act(self, stock):
-        if (stock.volatility() - 1 < self.idealRisk > stock.volatility() + .75) and not self.portfolio.__contains__(stock):  # buy branch
-            self.portfolio.append(stock)
+        # figure out if I own the stock
+        for orderItem in self.portfolio:
+            if orderItem.stock == stock:
+                if stock.goingPrice() + (orderItem.boughtAt * (self.stopLoss / 100)) > orderItem.boughtAt:  # sell branch
+                    self.returns += stock.goingPrice() - orderItem.boughtAt
+                    self.portfolio.remove(orderItem)
+                    return "Sell Stock ", stock.name
+
+        # cant reach me if I own the stock so I dont need to double check the ownership
+        if stock.volatility() - 1 < self.idealRisk > stock.volatility() + .75:  # buy branch
+            self.portfolio.append(Order(stock))
             stock.stockBought()
             return "Buy Stock ", stock.name
-        elif (stock.volatility() > self.idealRisk) and self.portfolio.__contains__(stock):  # sell branch
-            print("my vol: ", self.idealRisk, ". The vol: ", stock.volatility())
-            self.portfolio.remove(stock)
-            return "Sell Stock ", stock.name
         else:
-            # print(stock.goingPrice())
-            # print("The vol: ", stock.volatility())
             return None
+
+class Order():
+    def __init__(self, stock):
+        self.stock = stock
+        self.boughtAt = stock.goingPrice()
 
 
 """
@@ -67,32 +75,32 @@ Currently, these classes are only modified the abstract classes
 """
 class RiskAvers(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stocks, stopLoss=1, idealRisk=1, name="(risk adverse:" + str(id) + ")")
+        super().__init__(stopLoss=1, idealRisk=1, name="(risk adverse:" + str(id) + ")")
 
 
 class RiskNeutral(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stocks, stopLoss=1, idealRisk=2, name="(risk Neutral:" + str(id) + ")")
+        super().__init__(stopLoss=1, idealRisk=2, name="(risk Neutral:" + str(id) + ")")
 
 
 class RiskTolerant(Trader):
     def __init__(self, stocks, id) -> None:
-        super().__init__(stocks, stopLoss=4, idealRisk=3, name="(risk Tolerant:" + str(id) + ")")
+        super().__init__(stopLoss=4, idealRisk=3, name="(risk Tolerant:" + str(id) + ")")
 
 
 # TODO, actually write these.
-
-class WildCard(Trader):
-    def __init__(self, stocks) -> None:
-        super().__init__(stocks, stopLoss=0.25)
-
-    def act(self, listings) -> list:
-        return [("NAN",0)]
-
-
-class Oscillator(Trader):
-    def __init__(self, stocks) -> None:
-        super().__init__(stocks, stopLoss=0.1)
-
-    def act(self, listings) -> list:
-        return [("NAN",0)]
+#
+# class WildCard(Trader):
+#     def __init__(self, stocks) -> None:
+#         super().__init__(stocks, stopLoss=0.25)
+#
+#     def act(self, listings) -> list:
+#         return [("NAN",0)]
+#
+#
+# class Oscillator(Trader):
+#     def __init__(self, stocks) -> None:
+#         super().__init__(stocks, stopLoss=0.1)
+#
+#     def act(self, listings) -> list:
+#         return [("NAN",0)]
