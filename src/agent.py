@@ -112,15 +112,15 @@ class Trader:
         for stock in self.portfolio:
             # what would be the ideal amount of this stock to buy
                 # TODO: Make sure this math makes sense!!!!
-            ideal_amount = self.idealRisk / stock.volatility
+            ideal_amount = self.idealRisk / stock.volatility()
             # what is the closest whole number approximation of that ideal_amount
             closest_amount = sorted(
                 [int(ideal_amount),int(ideal_amount)+1],
-                key=lambda x:abs(self.idealRisk - x*stock.volatility)
+                key=lambda x:abs(self.idealRisk - x*stock.volatility())
             )[0]
             # offset for how much I already own (across all listings I have for this stock)
             amount = closest_amount - sum([i.get('amount') for i in self.portfolio[stock]])
-            optimalNum.append((stock, amount, stock.volatility*amount))
+            optimalNum.append((stock, amount, stock.volatility() * amount))
         # sort by best risk
         optimalNum = sorted(optimalNum, key=lambda x : abs(x[2]-self.idealRisk))
         # filter for what I can afford
