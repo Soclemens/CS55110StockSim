@@ -67,8 +67,8 @@ class Stock:
         assert self.__todaySells >= 0
         x = symbols("x")
         xRange = []
-        lowerBound = solve(-.8 * log(-1 * x + (log(self.__todayBuys + 1, 3) - log(self.__todaySells + 1, 3)), 10), x)[0]
-        upperBound = solve(-.8 * log(x + -1 * (log(self.__todayBuys + 1, 3) - log(self.__todaySells + 1, 3)), 10), x)[0]
+        lowerBound = solve(-.8 * log(-1 * x + (log(self.__todayBuys + 1, 3) - log(self.__todaySells + 1, 3)), 10) * self.volatility(), x)[0]
+        upperBound = solve(-.8 * log(x + -1 * (log(self.__todayBuys + 1, 3) - log(self.__todaySells + 1, 3)), 10) * self.volatility(), x)[0]
         xRange.append(lowerBound)
         xRange.append(upperBound)
         self.__priceHistory = np.append(self.__priceHistory, uniform(xRange[0], xRange[1]) + self.goingPrice())
@@ -83,7 +83,7 @@ class Stock:
         :return: None
         """
         self.__todayBuys += 1
-        print("A stock was bought")  # comment me out after testing
+
 
     def stockSold(self):
         """
@@ -91,7 +91,7 @@ class Stock:
         :return: None
         """
         self.__todaySells += 1
-        print("A stock was sold")  # comment me out after testing
+
 
 
 

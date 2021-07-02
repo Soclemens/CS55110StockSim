@@ -15,9 +15,9 @@ def reportStats(agents):
 
 
 def gameLoop():
-    stockMarket = StockMarket(marketSize=15)  # initialize the stock market
+    stockMarket = StockMarket(marketSize=5)  # initialize the stock market
     agents = []  # make a abstract container of agents
-    x = 1
+    x = 1000
     agents.extend([RiskNeutral(stockMarket.getStockListings(), 1) for _ in range(x)])  # makes x of neutral type of agent
     agents.extend([RiskTolerant(stockMarket.getStockListings(), 1) for _ in range(x)])  # makes x of tolerant type of agent
     agents.extend([RiskAvers(stockMarket.getStockListings(), 1) for _ in range(x)])  # makes x of avers type of agent
@@ -35,7 +35,8 @@ def gameLoop():
         stockMarket.updateMarket()  # update stock prices for tomorrow
 
         print("Finished day " + str(_) + " out of " + str(TRADING_DAYS + 1) + "... " + str((_/TRADING_DAYS) * 100) + "%")
-        print("--------------------------------------------------------------------------------------------------------")
+        for i in range(10):
+            print("--------------------------------------------------------------------------------------------------------")
     
     reportStats(agents)
 

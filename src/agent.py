@@ -50,13 +50,15 @@ class Trader:
     def act(self, stock):
         if (stock.volatility() - 1 < self.idealRisk > stock.volatility() + .75) and not self.portfolio.__contains__(stock):  # buy branch
             self.portfolio.append(stock)
+            stock.stockBought()
             return "Buy Stock ", stock.name
         elif (stock.volatility() > self.idealRisk) and self.portfolio.__contains__(stock):  # sell branch
             print("my vol: ", self.idealRisk, ". The vol: ", stock.volatility())
             self.portfolio.remove(stock)
             return "Sell Stock ", stock.name
         else:
-            # print("my vol: ", self.idealRisk, ". The vol: ", stock.volatility())
+            # print(stock.goingPrice())
+            # print("The vol: ", stock.volatility())
             return None
 
 
