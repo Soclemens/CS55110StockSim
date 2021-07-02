@@ -1,4 +1,7 @@
 
+
+from random import uniform
+
 class Order():
     def __init__(self, stock, volume):
         self.stock = stock
@@ -102,14 +105,14 @@ Currently, these classes are only modified the abstract classes
 """
 class RiskAvers(Trader):
     def __init__(self, ID=1):
-        super().__init__(stopLoss=5, idealRisk=1, name="Risk Adverse " + str(ID))
+        super().__init__(stopLoss=5 + uniform(0, 3), idealRisk=1  + uniform(0, 1), name="Risk Adverse " + str(ID))
 
 
 class RiskNeutral(Trader):
     def __init__(self, ID=1):
-        super().__init__(stopLoss=10, idealRisk=2, name="Risk Neutral " + str(ID))
+        super().__init__(stopLoss=10 + uniform(0, 4), idealRisk=2 + uniform(0, 1), name="Risk Neutral " + str(ID))
 
 
 class RiskTolerant(Trader):
     def __init__(self, ID=1):
-        super().__init__(stopLoss=20, idealRisk=3, name="Risk Tolerant " + str(ID))
+        super().__init__(stopLoss=20 + uniform(0, 5), idealRisk=3 + uniform(0, 1), name="Risk Tolerant " + str(ID))

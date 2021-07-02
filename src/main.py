@@ -1,7 +1,9 @@
+import matplotlib.pyplot as plt
+import numpy as np
 from env import *
 from agent import *
 
-TRADING_DAYS = 30
+TRADING_DAYS = 252
 
 def initialize():
     # set up
@@ -29,12 +31,29 @@ def gameLoop():
         print("--------------------------------------------------------------------------------------------------------")
     
     reportStats(agents)
+    graph(stockMarket)
 
 
 def reportStats(agents):
     print("///////// STATS REPORT /////////")
     for agent in agents:
         agent.printPerformance()
+
+
+def graph(stockMarket):
+    stocks = stockMarket.getStockListings()
+    avgPrice = []
+
+    for day in range(len(stocks[0].getPriceHistory())):
+        price = 0
+        for stock in stocks:
+            price += stock.getPriceHistory()[day]
+        avgPrice.append(price/len(stocks))
+
+    plt.plot(avgPrice)
+    plt.ylabel("Price")
+    plt.grid(True)
+    plt.show()
 
 
 if __name__ == '__main__':
