@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
+from numpy.lib.function_base import average
 from env import *
 from agent import *
 import typer
 from typing import Optional
 
 app = typer.Typer()
+TRADING_DAYS = 2
 
 
 @app.command()
@@ -24,17 +26,25 @@ def gameLoop(actorCount: Optional[int] = 1, traidingDays: Optional[int] = 10, ma
                     print('\t', act, order)
         stockMarket.updateMarket()  # update stock prices for tomorrow
 
-        print("Finished day " + str(i) + " out of " + str(traidingDays + 1) + "... " + format(i/traidingDays,'.2%'))
+        print("Finished day " + str(i+1) + " out of " + str(TRADING_DAYS) + "... " + format((i+1)/TRADING_DAYS,'.2%'))
         print("--------------------------------------------------------------------------------------------------------")
     
-    reportStats(agents)
+    reportStats(agents, x)
     graph(stockMarket)
 
 
-def reportStats(agents):
+def reportStats(agents, numAgents):
     print("///////// STATS REPORT /////////")
+    average = {'tolerant':0, 'neutral':0, 'avers':0 }
     for agent in agents:
         agent.printPerformance()
+        if type(agent) == RiskAvers: average['avers']+= agent.returns()/numAgents
+        elif type(agent) == RiskNeutral:  average['neutral']+= agent.returns()/numAgents
+        elif type(agent) == RiskTolerant:  average['tolerant']+= agent.returns()/numAgents
+    print('The average returns of each agent type was')
+    print('\tRisk Averse:  ', '$'+format(average['avers'],'0.2f'))
+    print('\tRisk Neutral: ', '$'+format(average['neutral'],'0.2f'))
+    print('\tRisk Tolerant:', '$'+format(average['tolerant'],'0.2f'))
 
 
 def graph(stockMarket):
@@ -48,7 +58,9 @@ def graph(stockMarket):
         avgPrice.append(price/len(stocks))
 
     plt.plot(avgPrice)
-    plt.ylabel("Price")
+    plt.title("Average Stock Market Trend (SMP)")
+    plt.xlabel("Day")
+    plt.ylabel("Price($)")
     plt.grid(True)
     plt.show()
 

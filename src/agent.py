@@ -2,6 +2,12 @@
 
 from random import uniform
 
+def map(value, a1, a2, b1, b2):
+    """
+    Maps a value from one range to another range
+    """
+    return b1 +(value-a1)*(b2-b1)/(a2-a1)
+
 class Order():
     def __init__(self, stock, volume):
         self.stock = stock
@@ -12,10 +18,10 @@ class Order():
         return self.stock.goingPrice() *self.volume
 
     def __repr__(self):
-        msg = 'stock:'+self.stock.name
-        msg += ', num:' + str(self.volume)
-        msg += ', boughtAt:' + format(self.boughtAt, '.2f')
-        msg += ', now:' + format(self.stock.goingPrice(),'.2f')
+        msg = 'stock:'+ format(self.stock.name, '3s')
+        msg += '  num:' + format(self.volume, '6.2f')
+        msg += '  boughtAt:' + format(self.boughtAt, '6.2f')
+        msg += '  now:' + format(self.stock.goingPrice(),'6.2f')
         return msg
 
 
@@ -53,8 +59,8 @@ class Trader:
             # is the price outside of my stoploss range?
             if abs(order.stock.goingPrice()/order.boughtAt-1) >= self.stopLoss/100:
                 self.money += order.worth()  # cash out the holding
-                for _ in range(order.volume): order.stock.stockSold()  # log transaction
-                returnOrders.append(('Sold', order)) # log action
+                for _ in range(int(order.volume)): order.stock.stockSold()  # log transaction
+                returnOrders.append(('Sold   ', order)) # log action
                 self.portfolio.remove(order)  # remove from my portfolio
         return returnOrders
 
@@ -62,32 +68,35 @@ class Trader:
     def buy(self, todaysListing, soldOrders):
         actions = []
         shopingCard = []
+        # This is the ideal risk I want per dollar
+        ideal_unit_risk = self.idealRisk/self.initialCapital
+        tolerance = self.idealRisk  # surrogate for a better metric, or using another parameter.
+        
         for stock in todaysListing:
             # if I just sold this stock, don't buy it back!
             if stock in [order.stock for _,order in soldOrders]:continue
             # If I already own this stock, don't buy more! (for now)
             if stock in [order.stock for order in self.portfolio]: continue
 
-            # find the optimal amount of this stock to purchase
-            ideal_amount = self.idealRisk / stock.volatility()
-            closest_amount = sorted([int(ideal_amount),int(ideal_amount)+1],
-                key=lambda amount:abs(self.idealRisk - amount*stock.volatility())
-            )[0]
-            
-            #TODO: Get this checked and see if this is what was meant
-            # if stock.volatility() - 1 < self.idealRisk < stock.volatility() + .75:  # buy branch
-            
-            # is this adjusted volatility outside of my confort zone? 
-            if self.idealRisk+0.75 > closest_amount*stock.volatility() > self.idealRisk-1:  # buy branch
-                shopingCard.append(Order(stock, closest_amount))  # add this order to the card
-            
+            # risk per dollar of my investment
+            unit_risk = stock.volatility()/stock.goingPrice()
+            distaste = abs(unit_risk/ideal_unit_risk-1)  # (0% - 100%)
+            # print(distaste)
+            if distaste < tolerance: # here is the threshold for excitability (10% of my ideal risk)
+                shopingCard.append((stock, distaste))  # add this order to the card (paired with the unit risk)
+                
         # sort card by items closest to my ideal risk level
-        for order in sorted(shopingCard, key=lambda order:abs(self.idealRisk - order.stock.volatility()*order.volume)):
-            if self.money >= order.worth():
-                for _ in range(order.volume): order.stock.stockBought()  # log transaction
-                self.portfolio.append(order)  # save this stock in my own records
-                actions.append(("Bought ", order)) # record action
-                self.money -= order.worth()  # balance the books
+        if len(shopingCard)>0 and self.money>0:
+            shopingCard = sorted(shopingCard, key=lambda pair: pair[1])  # sort by distance from idealUnitRisk
+            budgetMax = self.money/len(shopingCard)*2  # find the budgest for each stock
+            for stock, distaste in shopingCard:
+                # uses a proportional 
+                amount = (budgetMax * (1-map(distaste,0,tolerance,0,1)))/stock.goingPrice()  # the proportional amount of money I should spend
+                newOrder = Order(stock, amount)
+                for _ in range(int(amount)): stock.stockBought()  # log transaction
+                self.portfolio.append(newOrder)  # save this stock in my own records
+                actions.append(("Bought ", newOrder)) # record action
+                self.money -= newOrder.worth()  # balance the books
 
         return actions
 
