@@ -1,6 +1,7 @@
 from concurrent.futures.thread import ThreadPoolExecutor
 from random import uniform
 from statistics import stdev
+from numpy.core.arrayprint import dtype_is_implied
 import scipy.stats as stats
 from sympy import log, solve, symbols
 import numpy as np
@@ -23,7 +24,7 @@ class StockMarket:
         has each stock run updateStock on itself so it can update its values and clear the last days variables
         :return: None
         '''
-        executor = ThreadPoolExecutor(max_workers=10)
+        executor = ThreadPoolExecutor(max_workers=12)
         for stock in self.__stocks:
             executor.submit(stock.upDateStock())
 
@@ -53,13 +54,15 @@ class Stock:
         self.name = name if type(name) == str else str(name)  # Make sure it's a string
         self.__priceHistory = priceHistory  # a list of price histories to calculate volatility and going price
         self.goingPrice = lambda: self.__priceHistory[-1]  # the current going price of a stock
-        self.volatility = lambda: stdev(priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
+        self.volatility = lambda: stdev(self.__priceHistory)  # how volatile a stock is. To calculate find the stdev of all past prices
         self.__todayBuys = 6  # simulate more actors
         self.__todaySells = 8 # simulate more actors
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "key:" + self.name + " price:" + str(self.goingPrice())
 
+    def getPriceHistory(self):
+        return self.__priceHistory
 
     def upDateStock(self):
         '''
@@ -74,7 +77,7 @@ class Stock:
         upperBound = solve(-.8 * log(x + -1 * (log(self.__todayBuys + 1, 3) - log(self.__todaySells + 1, 3)), 10) * self.volatility(), x)[0]
         xRange.append(lowerBound)
         xRange.append(upperBound)
-        self.__priceHistory = np.append(self.__priceHistory, uniform(xRange[0], xRange[1]) + self.goingPrice())
+        self.__priceHistory = np.append(self.__priceHistory, float(uniform(xRange[0], xRange[1]) + self.goingPrice()))
         # Simulate more actors in the market
         self.__todayBuys = int(uniform(10, 50))
         self.__todaySells = int(uniform(10, 50))
